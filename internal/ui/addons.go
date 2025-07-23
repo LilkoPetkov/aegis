@@ -2,11 +2,10 @@ package ui
 
 import (
 	"aegis/internal/queries"
-	"log"
 
-	"database/sql"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"log"
 )
 
 func Copy(app fyne.App, password string) func(...int) {
@@ -14,9 +13,8 @@ func Copy(app fyne.App, password string) func(...int) {
 		app.Clipboard().SetContent(password)
 	}
 }
-
-func buildUserList(db *sql.DB, a fyne.App) *fyne.Container {
-	userData, err := queries.FetchUserData(db)
+func buildUserList(a fyne.App) *fyne.Container {
+	userData, err := queries.FetchUserData()
 	if err != nil {
 		log.Printf("Could not fetch user data: %s", err)
 		errorCard := createErrorCard("Error loading users")
@@ -30,16 +28,16 @@ func buildUserList(db *sql.DB, a fyne.App) *fyne.Container {
 
 	for _, user := range userData {
 		username := user["username"]
-		decryptedPassword := queries.FetchPassword(db, username)
+		decryptedPassword := queries.FetchPassword(username)
 		user["password_ciphertext"] = decryptedPassword
 	}
 
-	userCards := createUserCards(userData, a, db)
+	userCards := createUserCards(userData, a)
 	return container.NewVBox(userCards...)
 }
 
-func refreshUserList(db *sql.DB, a fyne.App) {
-	newContent := buildUserList(db, a)
+func refreshUserList(a fyne.App) {
+	newContent := buildUserList(a)
 	userListContainer.Objects = newContent.Objects
 	scrollContainer.Content = userListContainer
 	scrollContainer.Refresh()
