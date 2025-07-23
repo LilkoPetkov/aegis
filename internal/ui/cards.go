@@ -3,7 +3,6 @@ package ui
 import (
 	"aegis/internal/queries"
 
-	"database/sql"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -13,11 +12,11 @@ import (
 	"image/color"
 )
 
-func createUserCards(allUsers []map[string]string, a fyne.App, db *sql.DB) []fyne.CanvasObject {
+func createUserCards(allUsers []map[string]string, a fyne.App) []fyne.CanvasObject {
 	userCards := []fyne.CanvasObject{}
 
 	for _, user := range allUsers {
-		card := createUserCard(user, a, db)
+		card := createUserCard(user, a)
 		userCards = append(userCards, card)
 
 		if len(userCards) < len(allUsers) {
@@ -28,7 +27,7 @@ func createUserCards(allUsers []map[string]string, a fyne.App, db *sql.DB) []fyn
 	return userCards
 }
 
-func createUserCard(user map[string]string, a fyne.App, db *sql.DB) *fyne.Container {
+func createUserCard(user map[string]string, a fyne.App) *fyne.Container {
 	cardBg := canvas.NewLinearGradient(
 		color.NRGBA{R: 80, G: 132, B: 152, A: 255},
 		color.NRGBA{R: 102, G: 38, B: 75, A: 255},
@@ -55,12 +54,12 @@ func createUserCard(user map[string]string, a fyne.App, db *sql.DB) *fyne.Contai
 	copyBtn.Importance = widget.MediumImportance
 
 	editBtn := widget.NewButtonWithIcon("Edit", theme.DocumentCreateIcon(), func() {
-		openNewWindowForPasswordUpdate(a, db, user["username"])
+		openPasswordUpdateWindow(a, user["username"])
 	})
 
 	deleteBtn := widget.NewButtonWithIcon("Delete", theme.DeleteIcon(), func() {
-		queries.DeleteUserByPasswordHash(db, user["username"])
-		refreshUserList(db, a)
+		queries.DeleteUserByPasswordHash(user["username"])
+		refreshUserList(a)
 	})
 	deleteBtn.Importance = widget.DangerImportance
 

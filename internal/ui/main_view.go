@@ -17,8 +17,10 @@ var userListContainer *fyne.Container
 var scrollContainer *container.Scroll
 
 func RunUI() {
-	db := queries.InitDB()
-	queries.CreatePasswordsTable(db)
+	db := queries.DB
+	defer db.Close()
+
+	queries.CreatePasswordsTable()
 	a := app.New()
 	w := a.NewWindow("Aegis Password Manager")
 	w.CenterOnScreen()
@@ -37,15 +39,29 @@ func RunUI() {
 	titleText.TextSize = 24
 	titleText.TextStyle.Bold = true
 
+	importCsvButton := widget.NewButton("Import Passwords", func() {
+		openImportPassFromFile(a)
+	})
+	importCsvButton.Importance = widget.HighImportance
+	exportCsvButton := widget.NewButton("Export Passwords", func() {
+		openExportPassToFileWindow(a)
+	})
+	exportCsvButton.Importance = widget.HighImportance
 	addButton := widget.NewButton("Add New Password", func() {
-		openAddUserWindow(a, db)
+		openAddUserWindow(a)
 	})
 	addButton.Importance = widget.HighImportance
+
+	buttonBar := container.NewHBox(
+		importCsvButton,
+		exportCsvButton,
+		addButton,
+	)
 
 	headerContainer := container.NewBorder(
 		nil, nil,
 		container.NewPadded(titleText),
-		container.NewPadded(addButton),
+		buttonBar,
 	)
 
 	headerBg := canvas.NewLinearGradient(
@@ -55,7 +71,7 @@ func RunUI() {
 	)
 	headerWithBg := container.NewStack(headerBg, container.NewPadded(headerContainer))
 
-	userListContainer = buildUserList(db, a)
+	userListContainer = buildUserList(a)
 
 	scrollContainer = container.NewScroll(userListContainer)
 	scrollContainer.SetMinSize(fyne.NewSize(780, 450))

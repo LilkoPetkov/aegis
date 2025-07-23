@@ -12,8 +12,9 @@ import (
 )
 
 var masterPass = mpass.GetMasterPass()
+var DB *sql.DB
 
-func InitDB() *sql.DB {
+func init() {
 	configDir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatal("Could not get user config dir:", err)
@@ -26,17 +27,15 @@ func InitDB() *sql.DB {
 		log.Fatalf("Failed to create config dir: %v", err)
 	}
 
-	dbPath := filepath.Join(aegisConfigDir, "pm.sqlite")
+	DBPath := filepath.Join(aegisConfigDir, "pm.sqlite")
 
-	db, err := sql.Open("sqlite3", dbPath)
+	DB, err = sql.Open("sqlite3", DBPath)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
-
-	return db
 }
 
-func CreatePasswordsTable(db *sql.DB) {
+func CreatePasswordsTable() {
 	createPasswordsTableSQL := `
 	CREATE TABLE IF NOT EXISTS pwds (
 		username TEXT PRIMARY KEY,
@@ -48,7 +47,7 @@ func CreatePasswordsTable(db *sql.DB) {
 		updated_on DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 	`
-	_, err := db.Exec(createPasswordsTableSQL)
+	_, err := DB.Exec(createPasswordsTableSQL)
 	if err != nil {
 		log.Fatalf("Failed to create table %v", err)
 	}
@@ -59,7 +58,7 @@ func hashPassword(password string) []byte {
 	return h[:]
 }
 
-func AddNewPassword(db *sql.DB, username, password string) {
+func AddNewPassword(username, password string) {
 	userPassword := []byte(password)
 	passwordHash := hashPassword(password)
 
@@ -74,14 +73,27 @@ func AddNewPassword(db *sql.DB, username, password string) {
         INSERT INTO pwds (username, password_hash, password_ciphertext, nonce, salt)
         VALUES (?, ?, ?, ?, ?);
     `
-	_, err = db.Exec(stmt, username, passwordHash, cipherText, nonce, salt)
+	_, err = DB.Exec(stmt, username, passwordHash, cipherText, nonce, salt)
 	if err != nil {
 		log.Fatalf("Password could not be added in the database: %v", err)
 	}
 }
 
-func FetchPassword(db *sql.DB, username string) string {
-	row := db.QueryRow(`SELECT password_ciphertext, nonce, salt FROM pwds WHERE username = ?`, username)
+func InsertNewPasswordsFromFile() (*sql.Stmt, error) {
+	stmt, err := DB.Prepare(`
+        INSERT INTO pwds (username, password_hash, password_ciphertext, nonce, salt)
+        VALUES (?, ?, ?, ?, ?);
+    `)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return stmt, nil
+}
+
+func FetchPassword(username string) string {
+	row := DB.QueryRow(`SELECT password_ciphertext, nonce, salt FROM pwds WHERE username = ?`, username)
 
 	var cipherText, nonce, salt []byte
 	err := row.Scan(&cipherText, &nonce, &salt)
@@ -98,8 +110,8 @@ func FetchPassword(db *sql.DB, username string) string {
 	return string(pass)
 }
 
-func FetchUserData(db *sql.DB) ([]map[string]string, error) {
-	rows, err := db.Query(`SELECT username, password_ciphertext, password_hash, created_on, updated_on FROM pwds`)
+func FetchUserData() ([]map[string]string, error) {
+	rows, err := DB.Query(`SELECT username, password_ciphertext, password_hash, created_on, updated_on FROM pwds`)
 	if err != nil {
 		return nil, err
 	}
@@ -134,10 +146,10 @@ func FetchUserData(db *sql.DB) ([]map[string]string, error) {
 	return results, nil
 }
 
-func DeleteUserByPasswordHash(db *sql.DB, username string) {
+func DeleteUserByPasswordHash(username string) {
 	stmt := `DELETE FROM pwds WHERE username = ?`
 
-	result, err := db.Exec(stmt, username)
+	result, err := DB.Exec(stmt, username)
 	if err != nil {
 		log.Printf("failed to delete user by username: %s", err)
 	}
@@ -152,7 +164,7 @@ func DeleteUserByPasswordHash(db *sql.DB, username string) {
 	}
 }
 
-func EditUserPassword(db *sql.DB, newPassword, username string) {
+func EditUserPassword(newPassword, username string) {
 	stmt := `
 		UPDATE pwds
 		SET password_ciphertext = ?, nonce = ?, salt = ?, password_hash = ?, updated_on = datetime('now')
@@ -170,7 +182,7 @@ func EditUserPassword(db *sql.DB, newPassword, username string) {
 
 	newPasswordHash := hashPassword(newPassword)
 
-	result, err := db.Exec(stmt, cipherText, nonce, salt, newPasswordHash, username)
+	result, err := DB.Exec(stmt, cipherText, nonce, salt, newPasswordHash, username)
 	if err != nil {
 		log.Printf("failed to update password by username: %s", err)
 	}
@@ -183,4 +195,14 @@ func EditUserPassword(db *sql.DB, newPassword, username string) {
 	if rowsAffected == 0 {
 		log.Printf("no entry found with the given username")
 	}
+}
+
+func FetchAllUsers() *sql.Rows {
+	stmt := `SELECT * FROM pwds`
+	rows, err := DB.Query(stmt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return rows
 }
