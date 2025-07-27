@@ -16,6 +16,7 @@ import (
 var userListContainer *fyne.Container
 var scrollContainer *container.Scroll
 
+// RunUI runs the main user interface for the Aegis Password Manager.
 func RunUI() {
 	db := queries.DB
 	defer db.Close()

@@ -8,11 +8,31 @@ import (
 	"log"
 )
 
+// Copy copies the given password to the clipboard.
+//
+// Args:
+//
+//	app: The Fyne application instance.
+//	password: The password to copy.
+//
+// Returns:
+//
+//	A function that can be called to copy the password.
 func Copy(app fyne.App, password string) func(...int) {
 	return func(...int) {
 		app.Clipboard().SetContent(password)
 	}
 }
+
+// buildUserList builds the list of user cards to be displayed in the UI.
+//
+// Args:
+//
+//	a: The Fyne application instance.
+//
+// Returns:
+//
+//	A Fyne container with the user cards.
 func buildUserList(a fyne.App) *fyne.Container {
 	userData, err := queries.FetchUserData()
 	if err != nil {
@@ -36,6 +56,11 @@ func buildUserList(a fyne.App) *fyne.Container {
 	return container.NewVBox(userCards...)
 }
 
+// refreshUserList refreshes the list of user cards in the UI.
+//
+// Args:
+//
+//	a: The Fyne application instance.
 func refreshUserList(a fyne.App) {
 	newContent := buildUserList(a)
 	userListContainer.Objects = newContent.Objects

@@ -10,6 +10,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// openImportPassFromFile opens a new window for importing passwords from a CSV file.
+//
+// Args:
+//
+//	a: The Fyne application instance.
 func openImportPassFromFile(a fyne.App) {
 	updateWindow := a.NewWindow("Import CSV")
 	updateWindow.Resize(fyne.NewSize(400, 250))

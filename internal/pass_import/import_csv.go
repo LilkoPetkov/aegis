@@ -11,6 +11,15 @@ import (
 	"strings"
 )
 
+// ImportPasswordsCsv imports passwords from a CSV file into the database.
+//
+// Args:
+//
+//	filePath: The path to the CSV file to be imported.
+//
+// Returns:
+//
+//	An error if one occurred.
 func ImportPasswordsCsv(filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -39,6 +48,16 @@ func ImportPasswordsCsv(filePath string) error {
 	return nil
 }
 
+// writeRecords writes password records to the database.
+//
+// Args:
+//
+//	records: A 2D string slice containing the password records.
+//	stmt: The prepared statement to use for inserting the records.
+//
+// Returns:
+//
+//	An error if one occurred.
 func writeRecords(records [][]string, stmt *sql.Stmt) error {
 	for _, row := range records[1:] {
 		username := row[0]
@@ -73,6 +92,15 @@ func writeRecords(records [][]string, stmt *sql.Stmt) error {
 	return nil
 }
 
+// parseByteArray parses a string representation of a byte array into a byte slice.
+//
+// Args:
+//
+//	s: The string to parse.
+//
+// Returns:
+//
+//	The parsed byte slice and an error if one occurred.
 func parseByteArray(s string) ([]byte, error) {
 	s = strings.Trim(s, "[]")
 	if s == "" {
