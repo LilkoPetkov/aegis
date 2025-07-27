@@ -31,6 +31,8 @@ A secure, cross-platform password manager built with Go and Fyne, featuring AES-
 
 ```
 aegis/
+├── cmd/
+│   └── gui/             # Main GUI application entry point
 ├── internal/
 │   ├── crypto/          # Encryption/decryption logic
 │   ├── queries/         # Database operations
@@ -120,10 +122,10 @@ CREATE TABLE pwds (
 The CSV files contain the following columns:
 
 - `username`: Account username/identifier
-- `password_hash`: SHA-256 hash of the password
-- `password_ciphertext`: AES-encrypted password data
-- `nonce`: Encryption nonce (as byte array)
-- `salt`: Scrypt salt (as byte array)
+- `password_hash`: SHA-256 hash of the password (stored as a space-separated string of byte values, e.g., "104 101 108 108 111")
+- `password_ciphertext`: AES-encrypted password data (stored as a space-separated string of byte values)
+- `nonce`: Encryption nonce (stored as a space-separated string of byte values)
+- `salt`: Scrypt salt (stored as a space-separated string of byte values)
 - `created_on`: Timestamp of creation
 - `updated_on`: Timestamp of last modification
 
