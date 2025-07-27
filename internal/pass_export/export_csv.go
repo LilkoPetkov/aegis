@@ -9,6 +9,11 @@ import (
 	"os"
 )
 
+// ExportPasswordsCsv exports all passwords from the database to a CSV file.
+//
+// Args:
+//
+//	filePath: The path to the CSV file to be created.
 func ExportPasswordsCsv(filePath string) {
 	csvExport, err := os.Create(filePath)
 	if err != nil {
@@ -22,6 +27,11 @@ func ExportPasswordsCsv(filePath string) {
 	writeDataCsv(writer)
 }
 
+// writeDataCsv writes all password data to a CSV file.
+//
+// Args:
+//
+//	writer: The CSV writer to use for writing the data.
 func writeDataCsv(writer *csv.Writer) {
 	rows := queries.FetchAllUsers()
 	defer rows.Close()

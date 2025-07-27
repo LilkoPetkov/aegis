@@ -10,6 +10,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// openExportPassToFileWindow opens a new window for exporting passwords to a CSV file.
+//
+// Args:
+//
+//	a: The Fyne application instance.
 func openExportPassToFileWindow(a fyne.App) {
 	updateWindow := a.NewWindow("Export DB To CSV")
 	updateWindow.Resize(fyne.NewSize(400, 250))

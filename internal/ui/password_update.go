@@ -8,6 +8,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// openPasswordUpdateWindow opens a new window for updating a user's password.
+//
+// Args:
+//
+//	a: The Fyne application instance.
+//	username: The username of the user to update.
 func openPasswordUpdateWindow(a fyne.App, username string) {
 	updateWindow := a.NewWindow("Update Password")
 	updateWindow.Resize(fyne.NewSize(400, 250))

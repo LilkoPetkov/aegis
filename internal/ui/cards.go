@@ -12,6 +12,16 @@ import (
 	"image/color"
 )
 
+// createUserCards creates a slice of Fyne canvas objects representing user cards.
+//
+// Args:
+//
+//	allUsers: A slice of maps, where each map represents a user and their data.
+//	a: The Fyne application instance.
+//
+// Returns:
+//
+//	A slice of Fyne canvas objects.
 func createUserCards(allUsers []map[string]string, a fyne.App) []fyne.CanvasObject {
 	userCards := []fyne.CanvasObject{}
 
@@ -27,6 +37,16 @@ func createUserCards(allUsers []map[string]string, a fyne.App) []fyne.CanvasObje
 	return userCards
 }
 
+// createUserCard creates a Fyne container representing a user card.
+//
+// Args:
+//
+//	user: A map representing a user and their data.
+//	a: The Fyne application instance.
+//
+// Returns:
+//
+//	A Fyne container representing a user card.
 func createUserCard(user map[string]string, a fyne.App) *fyne.Container {
 	cardBg := canvas.NewLinearGradient(
 		color.NRGBA{R: 80, G: 132, B: 152, A: 255},
@@ -85,6 +105,15 @@ func createUserCard(user map[string]string, a fyne.App) *fyne.Container {
 	return card
 }
 
+// createErrorCard creates a Fyne container representing an error card.
+//
+// Args:
+//
+//	message: The error message to display.
+//
+// Returns:
+//
+//	A Fyne container representing an error card.
 func createErrorCard(message string) *fyne.Container {
 	errorBg := canvas.NewLinearGradient(
 		color.NRGBA{R: 140, G: 60, B: 60, A: 255},
@@ -109,6 +138,11 @@ func createErrorCard(message string) *fyne.Container {
 	)
 }
 
+// createEmptyStateCard creates a Fyne container representing an empty state card.
+//
+// Returns:
+//
+//	A Fyne container representing an empty state card.
 func createEmptyStateCard() *fyne.Container {
 	emptyBg := canvas.NewLinearGradient(
 		color.NRGBA{R: 70, G: 76, B: 90, A: 255},

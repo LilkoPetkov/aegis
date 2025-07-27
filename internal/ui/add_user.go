@@ -8,6 +8,11 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// openAddUserWindow opens a new window for adding a new password.
+//
+// Args:
+//
+//	a: The Fyne application instance.
 func openAddUserWindow(a fyne.App) {
 	addWindow := a.NewWindow("Add New Password")
 	addWindow.Resize(fyne.NewSize(400, 300))

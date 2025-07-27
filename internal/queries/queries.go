@@ -35,6 +35,7 @@ func init() {
 	}
 }
 
+// CreatePasswordsTable creates the passwords table in the database if it does not already exist.
 func CreatePasswordsTable() {
 	createPasswordsTableSQL := `
 	CREATE TABLE IF NOT EXISTS pwds (
@@ -53,11 +54,26 @@ func CreatePasswordsTable() {
 	}
 }
 
+// hashPassword hashes a password using SHA256.
+//
+// Args:
+//
+//	password: The password to hash.
+//
+// Returns:
+//
+//	The hashed password.
 func hashPassword(password string) []byte {
 	h := sha256.Sum256([]byte(password))
 	return h[:]
 }
 
+// AddNewPassword adds a new password to the database.
+//
+// Args:
+//
+//	username: The username for the new password.
+//	password: The password to add.
 func AddNewPassword(username, password string) {
 	userPassword := []byte(password)
 	passwordHash := hashPassword(password)
@@ -79,6 +95,11 @@ func AddNewPassword(username, password string) {
 	}
 }
 
+// InsertNewPasswordsFromFile prepares a statement for inserting new passwords from a file.
+//
+// Returns:
+//
+//	A prepared statement and an error if one occurred.
 func InsertNewPasswordsFromFile() (*sql.Stmt, error) {
 	stmt, err := DB.Prepare(`
         INSERT INTO pwds (username, password_hash, password_ciphertext, nonce, salt)
@@ -92,6 +113,15 @@ func InsertNewPasswordsFromFile() (*sql.Stmt, error) {
 	return stmt, nil
 }
 
+// FetchPassword fetches a password from the database and decrypts it.
+//
+// Args:
+//
+//	username: The username of the password to fetch.
+//
+// Returns:
+//
+//	The decrypted password.
 func FetchPassword(username string) string {
 	row := DB.QueryRow(`SELECT password_ciphertext, nonce, salt FROM pwds WHERE username = ?`, username)
 
@@ -110,6 +140,11 @@ func FetchPassword(username string) string {
 	return string(pass)
 }
 
+// FetchUserData fetches all user data from the database.
+//
+// Returns:
+//
+//	A slice of maps containing user data and an error if one occurred.
 func FetchUserData() ([]map[string]string, error) {
 	rows, err := DB.Query(`SELECT username, password_ciphertext, password_hash, created_on, updated_on FROM pwds`)
 	if err != nil {
@@ -146,6 +181,11 @@ func FetchUserData() ([]map[string]string, error) {
 	return results, nil
 }
 
+// DeleteUserByPasswordHash deletes a user from the database by their username.
+//
+// Args:
+//
+//	username: The username of the user to delete.
 func DeleteUserByPasswordHash(username string) {
 	stmt := `DELETE FROM pwds WHERE username = ?`
 
@@ -164,6 +204,12 @@ func DeleteUserByPasswordHash(username string) {
 	}
 }
 
+// EditUserPassword updates a user's password in the database.
+//
+// Args:
+//
+//	newPassword: The new password.
+//	username: The username of the user to update.
 func EditUserPassword(newPassword, username string) {
 	stmt := `
 		UPDATE pwds
@@ -197,6 +243,11 @@ func EditUserPassword(newPassword, username string) {
 	}
 }
 
+// FetchAllUsers fetches all users from the database.
+//
+// Returns:
+//
+//	An sql.Rows object containing all users.
 func FetchAllUsers() *sql.Rows {
 	stmt := `SELECT * FROM pwds`
 	rows, err := DB.Query(stmt)
